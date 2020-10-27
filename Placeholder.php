@@ -92,7 +92,7 @@ class Placeholder {
 			$tx = $this->convert_color( $tx_color );
 
 			if ( $name === false ) {
-				$name = 'placeholder-' . $this->width . '-' . $this->height . '-' . substr( $bg_color, 1 ) . '-' . substr( $tx_color, 1 ) . '-' . $this->render_type;
+				$name = 'placeholder-' . $this->width . '-' . $this->height . '-' . substr( $bg_color, 1 ) . '-' . substr( $tx_color, 1 ) . '-' . $this->render_type . '-' . time() . '-' . mt_rand(1000, 9999);
 			}
 
 			$name .= '.' . $this->format;
@@ -127,22 +127,21 @@ class Placeholder {
 				imagettftext( $image, $this->font_size, 0, $text_x, $text_y, $tx_fill, $font, $text );
 			}
 
+			$file = $path . $name;
+
 			switch ( $this->format ) {
 				case 'png':
-					imagepng( $image, $path . $name );
+					imagepng( $image, $file );
 					break;
 				case 'gif':
-					imagegif( $image, $path . $name );
+					imagegif( $image, $file );
 					break;
 				case 'jpg':
-					imagejpeg( $image, $path . $name );
+					imagejpeg( $image, $file );
 					break;
 			}
 
-			return array(
-				'path' => $path,
-				'name' => $name
-			);
+			return $file;
 		}
 	}
 
