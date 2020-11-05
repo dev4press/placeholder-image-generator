@@ -80,7 +80,7 @@ class Placeholder {
 
 	public function generate( $name = false, $path = false ) {
 		$path = $path === false ? dirname( __FILE__ ) : $path;
-		$path = $this->trailingslashit($path);
+		$path = $this->trailingslashit( $path );
 
 		if ( ! file_exists( $path ) || ! is_writeable( $path ) ) {
 			throw new Exception( 'Can\'t save image in the specified location.' );
@@ -92,7 +92,7 @@ class Placeholder {
 			$tx = $this->convert_color( $tx_color );
 
 			if ( $name === false ) {
-				$name = 'placeholder-' . $this->width . '-' . $this->height . '-' . substr( $bg_color, 1 ) . '-' . substr( $tx_color, 1 ) . '-' . $this->render_type . '-' . time() . '-' . mt_rand(1000, 9999);
+				$name = 'placeholder-' . $this->width . '-' . $this->height . '-' . substr( $bg_color, 1 ) . '-' . substr( $tx_color, 1 ) . '-' . $this->render_type . '-' . time() . '-' . mt_rand( 1000, 9999 );
 			}
 
 			$name .= '.' . $this->format;
@@ -116,7 +116,7 @@ class Placeholder {
 			}
 
 			if ( ! empty( $text ) ) {
-				$font     = $this->trailingslashit($this->font_path) . $this->font_name;
+				$font     = $this->trailingslashit( $this->font_path ) . $this->font_name;
 				$text_box = imagettfbbox( $this->font_size, 0, $font, $text );
 
 				$text_width  = abs( $text_box[4] - $text_box[0] );
@@ -189,7 +189,7 @@ class Placeholder {
 		}
 	}
 
-	protected function trailingslashit($path) {
-		return rtrim( $path, '/\\' ).'/';
+	protected function trailingslashit( $path ) {
+		return rtrim( $path, '/\\' ) . '/';
 	}
 }
