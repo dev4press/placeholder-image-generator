@@ -43,13 +43,13 @@ class Placeholder {
 		return $_instance;
 	}
 
-	public function format( $format = 'png' ) {
+	public function format( string $format = 'png' ) : Placeholder {
 		$this->format = in_array( $format, $this->allowed_format ) ? $format : 'png';
 
 		return $this;
 	}
 
-	public function font( $path = false, $name = false, $size = false ) {
+	public function font( $path = false, $name = false, $size = false ) : Placeholder {
 		$this->font_path = $path === false ? dirname( __FILE__ ) . '/font/' : $path;
 		$this->font_name = $name === false ? 'ShareTechMono-Regular.ttf' : $name;
 		$this->font_size = $size === false ? 32 : abs( intval( $size ) );
@@ -57,28 +57,31 @@ class Placeholder {
 		return $this;
 	}
 
-	public function size( $width = 1280, $height = 720 ) {
-		$this->width  = $width ? abs( intval( $width ) ) : $this->width;
-		$this->height = $height ? abs( intval( $height ) ) : $this->height;
+	public function size( int $width = 1280, int $height = 720 ) : Placeholder {
+		$this->width  = $width ? abs( $width ) : $this->width;
+		$this->height = $height ? abs( $height ) : $this->height;
 
 		return $this;
 	}
 
-	public function render( $size = 'size', $text = 'Lorem Ipsum' ) {
+	public function render( string $size = 'size', string $text = 'Lorem Ipsum' ) : Placeholder {
 		$this->render_type = in_array( $size, $this->allowed_render ) ? $size : 'size';
 		$this->render_text = strip_tags( $text );
 
 		return $this;
 	}
 
-	public function colors( $background = 'dark-random', $text = '#ffffff' ) {
+	public function colors( string $background = 'dark-random', string $text = '#ffffff' ) : Placeholder {
 		$this->color_background = $background;
 		$this->color_text       = $text;
 
 		return $this;
 	}
 
-	public function generate( $name = false, $path = false ) {
+	/**
+	 * @throws \Exception
+	 */
+	public function generate( $name = false, $path = false ) : string {
 		$path = $path === false ? dirname( __FILE__ ) : $path;
 		$path = $this->trailingslashit( $path );
 
@@ -145,7 +148,7 @@ class Placeholder {
 		}
 	}
 
-	protected function process_color( $color ) {
+	protected function process_color( string $color ) : string {
 		switch ( $color ) {
 			case 'dark-random':
 				$color = $this->random_color_in_range();
@@ -169,7 +172,7 @@ class Placeholder {
 		}
 	}
 
-	protected function random_color_in_range( $from = 0, $to = 127 ) {
+	protected function random_color_in_range( $from = 0, $to = 127 ) : string {
 		$color = '#';
 
 		for ( $i = 1; $i <= 3; $i ++ ) {
@@ -179,7 +182,7 @@ class Placeholder {
 		return $color;
 	}
 
-	protected function sanitize_color( $color ) {
+	protected function sanitize_color( string $color ) : string {
 		if ( '' === $color ) {
 			return '';
 		}
@@ -189,7 +192,7 @@ class Placeholder {
 		}
 	}
 
-	protected function trailingslashit( $path ) {
+	protected function trailingslashit( $path ) : string {
 		return rtrim( $path, '/\\' ) . '/';
 	}
 }
