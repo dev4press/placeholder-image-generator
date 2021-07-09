@@ -71,9 +71,9 @@ class Placeholder {
 		return $this;
 	}
 
-	public function colors( string $background = 'dark-random', string $text = '#ffffff' ) : Placeholder {
+	public function colors( string $background = 'dark-random', string $text = '' ) : Placeholder {
 		$this->color_background = $background;
-		$this->color_text       = $text;
+		$this->color_text       = ! empty( $text ) ? $text : ( $background == 'dark-random' ? '#FFFFFF' : ( $background == 'light-random' ? '#000000' : $text ) );
 
 		return $this;
 	}
