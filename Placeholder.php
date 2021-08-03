@@ -10,6 +10,11 @@ class Placeholder {
 		'size',
 		'text'
 	);
+	protected $allowed_sizes = array(
+		'big',
+		'small',
+		'medium'
+	);
 	protected $allowed_format = array(
 		'png',
 		'jpg',
@@ -26,8 +31,12 @@ class Placeholder {
 	protected $render_type = 'size';
 	protected $render_text = 'Lorem Ipsum';
 
+	protected $rectangles_limit = 0;
+	protected $rectangles_size = 'big';
+
 	protected $color_background = 'dark-random';
 	protected $color_text = '#ffffff';
+	protected $color_rectangle = 'dark-random';
 
 	public function __construct() {
 		$this->font();
@@ -71,6 +80,14 @@ class Placeholder {
 		return $this;
 	}
 
+	public function rectangles( int $limit = 10, string $size = 'big', string $color = 'dark-random' ) : Placeholder {
+		$this->rectangles_limit = $limit;
+		$this->rectangles_size  = in_array( $size, $this->allowed_sizes ) ? $size : 'size';
+		$this->color_rectangle  = $color;
+
+		return $this;
+	}
+
 	public function colors( string $background = 'dark-random', string $text = '' ) : Placeholder {
 		$this->color_background = $background;
 		$this->color_text       = ! empty( $text ) ? $text : ( $background == 'dark-random' ? '#FFFFFF' : ( $background == 'light-random' ? '#000000' : $text ) );
@@ -91,9 +108,6 @@ class Placeholder {
 			$bg_color = $this->process_color( $this->color_background );
 			$tx_color = $this->process_color( $this->color_text );
 
-			$bg = $this->convert_color( $bg_color );
-			$tx = $this->convert_color( $tx_color );
-
 			if ( $name === false ) {
 				$name = 'placeholder-' . $this->width . '-' . $this->height . '-' . substr( $bg_color, 1 ) . '-' . substr( $tx_color, 1 ) . '-' . $this->render_type . '-' . time() . '-' . mt_rand( 1000, 9999 );
 			}
@@ -102,33 +116,13 @@ class Placeholder {
 
 			$image = imagecreatetruecolor( $this->width, $this->height );
 
+			$bg      = $this->convert_color( $bg_color );
 			$bg_fill = imagecolorallocate( $image, $bg[0], $bg[1], $bg[2] );
-			$tx_fill = imagecolorallocate( $image, $tx[0], $tx[1], $tx[2] );
 
 			imagefill( $image, 0, 0, $bg_fill );
 
-			$text = '';
-
-			switch ( $this->render_type ) {
-				case 'size':
-					$text = $this->width . ' x ' . $this->height;
-					break;
-				case 'text':
-					$text = $this->render_text;
-					break;
-			}
-
-			if ( ! empty( $text ) ) {
-				$font     = $this->trailingslashit( $this->font_path ) . $this->font_name;
-				$text_box = imagettfbbox( $this->font_size, 0, $font, $text );
-
-				$text_width  = abs( $text_box[4] - $text_box[0] );
-				$text_height = abs( $text_box[5] - $text_box[1] );
-				$text_x      = ( $this->width - $text_width ) / 2;
-				$text_y      = ( $this->height + $text_height ) / 2;
-
-				imagettftext( $image, $this->font_size, 0, $text_x, $text_y, $tx_fill, $font, $text );
-			}
+			$this->add_rectangles( $image );
+			$this->add_text( $image, $tx_color );
 
 			$file = $path . $name;
 
@@ -145,6 +139,63 @@ class Placeholder {
 			}
 
 			return $file;
+		}
+	}
+
+	protected function add_rectangles( $image ) {
+		if ( $this->rectangles_limit > 0 ) {
+			for ( $i = 0; $i < $this->rectangles_limit; $i ++ ) {
+				$rc_color = $this->process_color( $this->color_rectangle );
+				$rc       = $this->convert_color( $rc_color );
+				$rc_fill  = imagecolorallocate( $image, $rc[0], $rc[1], $rc[2] );
+
+				$max_x = $this->width;
+				$max_y = $this->height;
+
+				if ( $this->rectangles_size === 'small' ) {
+					$max_x = intval( $max_x / 4 );
+					$max_y = intval( $max_y / 4 );
+				} else if ( $this->rectangles_size === 'medium' ) {
+					$max_x = intval( $max_x / 2 );
+					$max_y = intval( $max_y / 2 );
+				}
+
+				$x1 = rand( 0, $this->width );
+				$y1 = rand( 0, $this->height );
+
+				$x2 = rand( $x1, $x1 + $max_x );
+				$y2 = rand( $y1, $y1 + $max_y );
+
+				imagefilledrectangle( $image, $x1, $y1, $x2, $y2, $rc_fill );
+			}
+		}
+	}
+
+	protected function add_text( $image, $tx_color ) {
+		$text = '';
+
+		switch ( $this->render_type ) {
+			case 'size':
+				$text = $this->width . ' x ' . $this->height;
+				break;
+			case 'text':
+				$text = $this->render_text;
+				break;
+		}
+
+		if ( ! empty( $text ) ) {
+			$tx      = $this->convert_color( $tx_color );
+			$tx_fill = imagecolorallocate( $image, $tx[0], $tx[1], $tx[2] );
+
+			$font     = $this->trailingslashit( $this->font_path ) . $this->font_name;
+			$text_box = imagettfbbox( $this->font_size, 0, $font, $text );
+
+			$text_width  = abs( $text_box[4] - $text_box[0] );
+			$text_height = abs( $text_box[5] - $text_box[1] );
+			$text_x      = ( $this->width - $text_width ) / 2;
+			$text_y      = ( $this->height + $text_height ) / 2;
+
+			imagettftext( $image, $this->font_size, 0, $text_x, $text_y, $tx_fill, $font, $text );
 		}
 	}
 
@@ -190,6 +241,8 @@ class Placeholder {
 		if ( preg_match( '|^#([A-Fa-f0-9]{3}){1,2}$|', $color ) ) {
 			return $color;
 		}
+
+		return '';
 	}
 
 	protected function trailingslashit( $path ) : string {
